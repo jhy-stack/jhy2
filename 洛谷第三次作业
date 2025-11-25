@@ -1,0 +1,60 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+vector<vector<int>> seq(10005);  // 序列库，id 从 1 到 10000
+
+int main() {
+    int n;
+    cin >> n;
+    
+    while (n--) {
+        string cmd;
+        cin >> cmd;
+        
+        if (cmd == "new") {
+            int id;
+            cin >> id;
+            seq[id].clear();  // 新建即清空（如果之前有）
+        }
+        else if (cmd == "add") {
+            int id, num;
+            cin >> id >> num;
+            seq[id].push_back(num);
+        }
+        else if (cmd == "merge") {
+            int id1, id2;
+            cin >> id1 >> id2;
+            if (id1 == id2) continue;
+            // 把 id2 的所有元素加入 id1
+            seq[id1].insert(seq[id1].end(), seq[id2].begin(), seq[id2].end());
+            seq[id2].clear();
+        }
+        else if (cmd == "unique") {
+            int id;
+            cin >> id;
+            sort(seq[id].begin(), seq[id].end());
+            auto last = unique(seq[id].begin(), seq[id].end());
+            seq[id].erase(last, seq[id].end());
+        }
+        else if (cmd == "out") {
+            int id;
+            cin >> id;
+            if (seq[id].empty()) {
+                cout << endl;
+                continue;
+            }
+            vector<int> tmp = seq[id];
+            sort(tmp.begin(), tmp.end());
+            for (size_t i = 0; i < tmp.size(); i++) {
+                if (i > 0) cout << " ";
+                cout << tmp[i];
+            }
+            cout << endl;
+        }
+    }
+    
+    return 0;
+}
