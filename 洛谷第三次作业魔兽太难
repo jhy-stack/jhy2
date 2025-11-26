@@ -1,0 +1,117 @@
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <vector>
+using namespace std;
+
+const string RED = "red";
+const string BLUE = "blue";
+const string WARRIOR_NAMES[] = {"dragon", "ninja", "iceman", "lion", "wolf"};
+const string WEAPON_NAMES[] = {"sword", "bomb", "arrow"};
+
+int M; // 初始生命元
+int warriorStrength[5]; // 生命值
+int redOrder[5] = {2, 3, 4, 1, 0}; // iceman, lion, wolf, ninja, dragon
+int blueOrder[5] = {3, 0, 1, 2, 4}; // lion, dragon, ninja, iceman, wolf
+
+class Headquarters {
+private:
+    string color;
+    int life;
+    int warriorCount[5]; // 每种武士数量
+    int totalCount; // 总武士数
+    int order[5]; // 制造顺序
+    int currentIndex; // 当前尝试的索引
+    bool stopped;
+    
+public:
+    Headquarters(string c, int l, int* o) : color(c), life(l), totalCount(0), currentIndex(0), stopped(false) {
+        for (int i = 0; i < 5; i++) {
+            warriorCount[i] = 0;
+            order[i] = o[i];
+        }
+    }
+    
+    bool isStopped() { return stopped; }
+    
+    void produce(int time) {
+        if (stopped) return;
+        
+        int startIndex = currentIndex;
+        bool produced = false;
+        
+        while (true) {
+            int type = order[currentIndex];
+            if (warriorStrength[type] <= life) {
+                // 可以制造
+                life -= warriorStrength[type];
+                totalCount++;
+                warriorCount[type]++;
+                
+                // 输出制造信息
+                cout << setw(3) << setfill('0') << time << " ";
+                cout << color << " " << WARRIOR_NAMES[type] << " " << totalCount;
+                cout << " born with strength " << warriorStrength[type] << ",";
+                cout << warriorCount[type] << " " << WARRIOR_NAMES[type];
+                cout << " in " << color << " headquarter" << endl;
+                
+                // 输出特殊属性
+                if (type == 0) { // dragon
+                    int weapon = totalCount % 3;
+                    double morale = (double)life / warriorStrength[type];
+                    cout << "It has a " << WEAPON_NAMES[weapon];
+                    cout << " and it's morale is " << fixed << setprecision(2) << morale << endl;
+                } else if (type == 1) { // ninja
+                    int weapon1 = totalCount % 3;
+                    int weapon2 = (totalCount + 1) % 3;
+                    cout << "It has a " << WEAPON_NAMES[weapon1];
+                    cout << " and a " << WEAPON_NAMES[weapon2] << endl;
+                } else if (type == 2) { // iceman
+                    int weapon = totalCount % 3;
+                    cout << "It has a " << WEAPON_NAMES[weapon] << endl;
+                } else if (type == 3) { // lion
+                    cout << "It's loyalty is " << life << endl;
+                }
+                
+                currentIndex = (currentIndex + 1) % 5;
+                produced = true;
+                break;
+            }
+            
+            currentIndex = (currentIndex + 1) % 5;
+            if (currentIndex == startIndex) {
+                // 所有类型都尝试过了
+                stopped = true;
+                cout << setw(3) << setfill('0') << time << " ";
+                cout << color << " headquarter stops making warriors" << endl;
+                break;
+            }
+        }
+    }
+};
+
+int main() {
+    int T;
+    cin >> T;
+    
+    for (int caseNum = 1; caseNum <= T; caseNum++) {
+        cin >> M;
+        for (int i = 0; i < 5; i++) {
+            cin >> warriorStrength[i];
+        }
+        
+        cout << "Case:" << caseNum << endl;
+        
+        Headquarters red(RED, M, redOrder);
+        Headquarters blue(BLUE, M, blueOrder);
+        
+        int time = 0;
+        while (!red.isStopped() || !blue.isStopped()) {
+            if (!red.isStopped()) red.produce(time);
+            if (!blue.isStopped()) blue.produce(time);
+            time++;
+        }
+    }
+    
+    return 0;
+}
